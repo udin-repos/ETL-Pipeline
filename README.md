@@ -9,23 +9,25 @@ A containerised data pipeline consisting of a **Flask mock server**, a **FastAPI
 docker-compose up -d --build
 
 # Check Flask health
-curl http://localhost:5000/api/health
+curl.exe http://localhost:5000/api/health
 
 # Browse customers (Flask)
-curl "http://localhost:5000/api/customers?page=1&limit=5"
+curl.exe "http://localhost:5000/api/customers?page=1&limit=5"
 
 # Trigger ingestion into PostgreSQL
-curl -X POST http://localhost:8000/api/ingest
+curl.exe -X POST http://localhost:8000/api/ingest
 
 # Query customers (FastAPI / DB)
-curl "http://localhost:8000/api/customers?page=1&limit=5"
+curl.exe "http://localhost:8000/api/customers?page=1&limit=5"
 
 # Single customer
-curl http://localhost:8000/api/customers/CUST-001
+curl.exe http://localhost:8000/api/customers/CUST-001
 
 # Tear down
 docker-compose down -v
 ```
+
+> **Note:** On Windows PowerShell, use `curl.exe` (not `curl`) to avoid the `Invoke-WebRequest` alias. On Linux/Mac, use `curl` as normal.
 
 ## Architecture
 
