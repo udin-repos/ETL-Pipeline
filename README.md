@@ -34,10 +34,11 @@ docker-compose down -v
 
 ## 🏗️ Architecture
 
-```mermaid
-flowchart LR
-    A["Flask Mock Server\n(Port 5000)"] -- "JSON API" --> B["FastAPI Pipeline\n(dlt ingest)"]
-    B -- "Merge/Upsert" --> C[("PostgreSQL\n(Port 5432)")]
+```text
+┌──────────────┐       ┌────────────────────┐       ┌────────────┐
+│  Flask Mock  │──────▶│  FastAPI Pipeline  │──────▶│ PostgreSQL │
+│  Server:5000 │  GET  │  (dlt ingest):8000 │ Merge │  :5432     │
+└──────────────┘       └────────────────────┘       └────────────┘
 ```
 
 1. **Flask Mock Server**: Simulates a legacy API by serving raw `.json` dataset via paginated endpoints.
