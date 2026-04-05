@@ -4,7 +4,7 @@ A containerised data pipeline consisting of a **Flask mock server**, a **FastAPI
 
 This project uses the modern **[dlt (Data Load Tool)](https://dlthub.com/)** library to robustly extract, normalize, and load the paginated data directly into PostgreSQL using a reliable merge/upsert strategy.
 
-## 🚀 Quick Start
+## Quick Start
 
 Ensure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 
@@ -47,7 +47,7 @@ docker-compose down -v
 
 ---
 
-## 📡 Endpoints Overview
+## Endpoints Overview
 
 ### Flask Mock Server (`:5000`)
 | Method | Path | Description |
@@ -63,7 +63,7 @@ docker-compose down -v
 | GET | `/api/customers?page=1&limit=10` | Queries the processed, paginated customer list directly from DB |
 | GET | `/api/customers/{id}` | Queries a single customer from DB |
 
-## 🛠️ Technology Stack
+## Technology Stack
 - **Python 3.10+**
 - **Docker & Docker Compose**
 - **FastAPI** & **SQLAlchemy** (Pipeline)
