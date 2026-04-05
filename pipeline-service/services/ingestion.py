@@ -1,14 +1,8 @@
-"""Ingestion service – fetches all customers from Flask mock-server and upserts
-them into PostgreSQL."""
-
 import os
 from datetime import date, datetime
 
+import dlt
 import httpx
-from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import Session
-
-from models.customer import Customer
 
 MOCK_SERVER_URL = os.getenv("MOCK_SERVER_URL", "http://mock-server:5000")
 PAGE_SIZE = 50  # fetch in large pages to minimise round-trips
@@ -43,40 +37,48 @@ def fetch_all_customers() -> list[dict]:
 def _parse_date(value: str | None) -> date | None:
     if not value:
         return None
-    return datetime.strptime(value, "%Y-%m-%d").date()
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return None
 
 
 def _parse_datetime(value: str | None) -> datetime | None:
     if not value:
         return None
-    return datetime.fromisoformat(value)
+    try:
+        return datetime.fromisoformat(value)
+    except (ValueError, TypeError):
+        return None
 
 
-def upsert_customers(db: Session, records: list[dict]) -> int:
-    """Insert or update customer records using PostgreSQL ON CONFLICT."""
+def upsert_customers(records: list[dict]) -> int:
+    """Insert or update customer records using dlt merging."""
     if not records:
         return 0
 
+    # Ensure dates/datetimes are parsed before ingestion
     for record in records:
         record["date_of_birth"] = _parse_date(record.get("date_of_birth"))
         record["created_at"] = _parse_datetime(record.get("created_at"))
 
-    stmt = insert(Customer).values(records)
-    stmt = stmt.on_conflict_do_update(
-        index_elements=["customer_id"],
-        set_={
-            "first_name": stmt.excluded.first_name,
-            "last_name": stmt.excluded.last_name,
-            "email": stmt.excluded.email,
-            "phone": stmt.excluded.phone,
-            "address": stmt.excluded.address,
-            "date_of_birth": stmt.excluded.date_of_birth,
-            "account_balance": stmt.excluded.account_balance,
-            "created_at": stmt.excluded.created_at,
-        },
+    # Configure dlt with the existing DATABASE_URL
+    # dlt will look for DESTINATION__POSTGRES__CREDENTIALS by default.
+    # We can inject it into the environment here for simplicity.
+    if os.getenv("DATABASE_URL") and not os.getenv("DESTINATION__POSTGRES__CREDENTIALS"):
+        os.environ["DESTINATION__POSTGRES__CREDENTIALS"] = os.getenv("DATABASE_URL")
+
+    pipeline = dlt.pipeline(
+        pipeline_name="customer_ingestion",
+        destination="postgres",
+        dataset_name="public",
     )
 
-    db.execute(stmt)
-    db.commit()
+    pipeline.run(
+        records,
+        table_name="customers",
+        write_disposition="merge",
+        primary_key="customer_id",
+    )
 
     return len(records)

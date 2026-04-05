@@ -1,0 +1,28 @@
+# Refactor Ingestion to Use `dlt`
+
+## User Review Required
+This is a high-level plan tailored for a Junior Programmer or an AI model to follow. Please review it and confirm if you'd like me to execute it, or if you're taking this to give to someone else!
+
+## Proposed Changes
+
+### `pipeline-service`
+
+#### [MODIFY] [requirements.txt](file:///c:/Users/syaif/Documents/E/Github/Acumen/pipeline-service/requirements.txt)
+- Add `dlt` to the project's dependencies to satisfy the assessment library requirement.
+
+#### [MODIFY] [ingestion.py](file:///c:/Users/syaif/Documents/E/Github/Acumen/pipeline-service/services/ingestion.py)
+- **Remove:** The raw SQLAlchemy `insert(...).on_conflict_do_update` code block. 
+- **Add:** Import the `dlt` library. 
+- **Change:** Refactor the `upsert_customers` feature to use `dlt.pipeline()`. 
+- **Implementation hint:** Create a `dlt` pipeline configured with `destination="postgres"`. Execute the pipeline passing the `fetch_all_customers()` records, setting `table_name="customers"`, `write_disposition="merge"`, and `primary_key="customer_id"`. This will automatically handle the schema and upsert natively via `dlt`.
+
+#### [MODIFY] [main.py](file:///c:/Users/syaif/Documents/E/Github/Acumen/pipeline-service/main.py)
+- **Change:** Make minor adjustments to the `/api/ingest` endpoint to ensure it correctly captures the processed record count from the new `dlt` pipeline results instead of the old function.
+
+## Verification Plan
+
+### Automated Tests
+- Run `docker-compose build pipeline-service` to ensure `dlt` installs successfully.
+- Run `docker-compose up -d`
+- Manually trigger `curl -X POST http://localhost:8000/api/ingest` and ensure it responds with success status.
+- Trigger `curl http://localhost:8000/api/customers` to verify data actually loaded.

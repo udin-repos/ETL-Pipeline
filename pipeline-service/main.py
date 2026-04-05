@@ -21,11 +21,11 @@ def startup():
 # Endpoints
 # ---------------------------------------------------------------------------
 @app.post("/api/ingest")
-def ingest(db: Session = Depends(get_db)):
+def ingest():
     """Fetch all customers from the mock server and upsert into PostgreSQL."""
     try:
         records = fetch_all_customers()
-        count = upsert_customers(db, records)
+        count = upsert_customers(records)
         return {"status": "success", "records_processed": count}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
