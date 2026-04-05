@@ -32,7 +32,7 @@ docker-compose down -v
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```text
 ┌──────────────┐       ┌────────────────────┐       ┌────────────┐
